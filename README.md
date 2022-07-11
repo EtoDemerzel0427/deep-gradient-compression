@@ -72,6 +72,26 @@ The core code to implement DGC is in [dgc/compression.py](dgc/compression.py) an
 ```
 
 ## Training
+
+### Added by us
+
+- baseline  (without compression):
+```bash
+# for multiple nodes:
+# use horovodrun -np 16 -H server1:4,server2:4,server3:4,server4:4
+horovodrun -np 8 python train.py --configs configs/cifar/resnet32.py
+```
+
+- compression (vanilla top-k selection):
+```bash
+# fp16 values, int32 indices
+# for multiple nodes:
+# use horovodrun -np 16 -H server1:4,server2:4,server3:4,server4:4
+horovodrun -np 8 python train.py --configs configs/cifar/resnet32.py \
+    configs/raw/wm5.py configs/raw/fp16.py configs/raw/int32.py
+```
+
+### Author's original 
 We use [Horovod](https://github.com/horovod/horovod) to run distributed training:
 - run on a machine with *N* GPUs,
 ```bash

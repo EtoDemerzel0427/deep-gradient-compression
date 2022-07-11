@@ -135,7 +135,8 @@ def main():
         compression.memory.initialize(model.named_parameters())
         cpr_parameters = {}
         for name, param in model.named_parameters():
-            if param.dim() > 1:
+            # ignore bias and parameters with too few entries
+            if param.dim() > 1 and param.numel() * configs.train.compression.compress_ratio > 1:
                 cpr_parameters[name] = param
         compression.initialize(cpr_parameters.items())
     else:
