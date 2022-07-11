@@ -19,6 +19,7 @@ configs.train.criterion = Config(torch.nn.CrossEntropyLoss)
 # optimizer
 configs.train.optimizer = Config(torch.optim.SGD)
 configs.train.optimizer.momentum = 0.9
+configs.train.optimize_bn_separately = False
 
 # scheduler
 configs.train.schedule_lr_per_epoch = True
