@@ -1,5 +1,6 @@
 import math
 import random
+import os
 
 import torch
 
@@ -106,7 +107,7 @@ class DGCCompressor:
             self.compress_ratio = compress_ratio
             self.initialize(self.attributes.items())
 
-    def _sparsify(self, tensor, name):
+    def _sparsify(self, tensor, name, save_indices=False, epoch=-1):
         tensor = tensor.view(-1)
         numel, shape, num_selects, num_samples, top_k_samples, sample_stride = self.attributes[name]
 
@@ -124,6 +125,11 @@ class DGCCompressor:
         mask = torch.ge(importance, threshold)
         indices = mask.nonzero().view(-1)
         num_indices = indices.numel()
+
+        if save_indices:
+            if not os.path.exists(f"collections/rank_{hvd.rank()}_{name}"):
+                os.makedirs(f"collections/rank_{hvd.rank()}_{name}")
+            torch.save(indices, f"collections/rank_{hvd.rank()}_{name}/indices_epoch_{epoch}.pt")
 
         if numel > num_samples:
             # code modified from https://github.com/sands-lab/grace/blob/master/grace_dl/torch/compressor/dgc.py

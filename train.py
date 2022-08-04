@@ -273,6 +273,8 @@ def train(model, loader, device, epoch, sampler, criterion, optimizer,
 
     sampler.set_epoch(epoch)
     model.train()
+    optimizer.save_indices = True
+    optimizer.epoch = epoch
     for step, (inputs, targets) in enumerate(tqdm(
             loader, desc='train', ncols=0, disable=quiet)):
         adjust_learning_rate(scheduler, epoch=epoch, step=step,
@@ -300,6 +302,9 @@ def train(model, loader, device, epoch, sampler, criterion, optimizer,
         if writer is not None:
             num_inputs += step_size * hvd.size()
             writer.add_scalar('loss/train', loss, num_inputs)
+
+        if optimizer.save_indices:
+            optimizer.save_indices = False
 
 
 def evaluate(model, loader, device, meters, split='test', quiet=True):

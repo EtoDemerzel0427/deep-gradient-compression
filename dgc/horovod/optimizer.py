@@ -76,6 +76,9 @@ class _DistributedOptimizer(torch.optim.Optimizer):
         self._requires_update = set()
         self._synchronized = False
         self._should_synchronize = True
+        self.save_indices = True
+        self.epoch = -1
+
         if size() > 1 or os.environ.get('HOROVOD_ELASTIC') == '1':
             self._register_hooks()
 
@@ -115,7 +118,7 @@ class _DistributedOptimizer(torch.optim.Optimizer):
 
     def _allreduce_grad_async(self, p):
         name = self._parameter_names.get(p)
-        tensor_compressed, ctx = self._compression.compress(p.grad, name)
+        tensor_compressed, ctx = self._compression.compress(p.grad, name, save_indices=self.save_indices, epoch=self.epoch)
 
         handle = self._communicate_(tensor_compressed, name=name, op=self.op)
         return handle, ctx
@@ -243,6 +246,8 @@ class _DistributedAdasumOptimizer(torch.optim.Optimizer):
         self._requires_update = set()
         self._synchronized = False
         self._should_synchronize = True
+        self.save_indices = True
+        self.epoch = -1
 
         self._starting_models = {
             p : torch.zeros_like(p, requires_grad=False)
@@ -303,7 +308,7 @@ class _DistributedAdasumOptimizer(torch.optim.Optimizer):
         p.data.sub_(start)
 
         # allreduce as before
-        tensor_compressed, ctx = self._compression.compress(p, name)
+        tensor_compressed, ctx = self._compression.compress(p, name, save_indices=self.save_indices, epoch=self.epoch)
         handle = self._communicate_(tensor_compressed.data, name=name, op=Adasum)
 
         # reset stashed parameters
