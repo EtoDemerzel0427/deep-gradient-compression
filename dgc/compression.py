@@ -158,13 +158,13 @@ class DGCCompressor:
         values = tensor[indices]
         return values, indices, numel, shape, num_selects
 
-    def compress(self, tensor, name):
+    def compress(self, tensor, name, save_indices=False, epoch=-1):
         if self.compress_ratio < 1.0 and name in self.attributes:
             # compress
             tensor_compensated = self.memory.compensate(
                 tensor, name, accumulate=True)
             values, indices, numel, shape, num_selects = \
-                self._sparsify(tensor_compensated, name)
+                self._sparsify(tensor_compensated, name, save_indices, epoch)
             self.memory.update(name, (indices, ))
             indices = indices.view(-1, 1)
             values = values.view(-1, 1)
